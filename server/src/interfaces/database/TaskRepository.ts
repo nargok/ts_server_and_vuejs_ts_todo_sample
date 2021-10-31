@@ -33,13 +33,15 @@ export class TaskRepository extends ITaskRepository {
     const { title } = task;
     try {
       const query = {
-        text: 'insert into public."TodoTasks" (uuid, title, "createdAt", "updatedAt") VALUES($1, $2, current_timestamp, current_timestamp)',
+        text: 'insert into public."TodoTasks" (uuid, title, "createdAt", "updatedAt") VALUES($1, $2, current_timestamp, current_timestamp) RETURNING *',
         values: [uuidv4(), title],
       };
       const result = await this.connection.execute(query);
-      // return result.rows;
-      // task.id = result.id
-      return result;
+      const { uuid, createdAt, updatedAt } = result.rows[0];
+      task.uuid = uuid;
+      task.cretedAt = String(createdAt);
+      task.updatedAt = String(updatedAt);
+      return task;
     } catch (e) {
       console.error(e);
       throw e;
